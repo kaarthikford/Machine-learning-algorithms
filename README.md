@@ -7,7 +7,7 @@ quiet helpful when we need to take a call based on unrelated independent variabl
 exist in the dataset.
 
 This code requires Rstudio for execution
-Packages to be installed as follows:
+And Packages to be installed as follows:
 1. caret
 2. e1071
 3. mice
