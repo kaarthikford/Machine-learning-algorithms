@@ -8,7 +8,7 @@ exist in the dataset.
 
 This code requires Rstudio for execution
 and Packages to be installed as follows:
-Naive Bayes algorithm
+**Naive Bayes algorithm**
 1. caret
 2. e1071
 3. mice
