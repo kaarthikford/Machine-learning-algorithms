@@ -1,5 +1,5 @@
 #Load the data
-loan <- read.csv("/cloud/project/Karthikeyan Workspace/german_credit.csv")
+loan <- read.csv("german_credit.csv")
 head(loan)
 View(loan)
 
