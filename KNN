@@ -1,0 +1,75 @@
+#Load the data
+loan <- read.csv("/cloud/project/Karthikeyan Workspace/german_credit.csv")
+head(loan)
+View(loan)
+
+str(loan)
+
+loan.subset <- loan[c('Creditability','Age..years.','Sex...Marital.Status','Occupation','Account.Balance','Credit.Amount','Length.of.current.employment','Purpose')]
+View(loan.subset)
+
+head(loan.subset)
+
+#Normalize
+normalize <- function(x) {
+  return((x-min(x))/(max(x)-min(x)))
+}
+normalize(c(1:10))
+
+loan.subset.n <- as.data.frame(lapply(loan.subset[,2:8], normalize))
+head(loan.subset.n)
+
+set.seed(123) #To get the same random sample
+dat.d <- sample(1:nrow(loan.subset.n),
+                size=nrow(loan.subset.n)*0.7,replace = F)#random selection of 70% data.
+
+nrow(loan.subset)
+nrow(loan.subset[-dat.d,])
+
+train.loan <- loan.subset[dat.d,] #70% training data
+test.loan <- loan.subset[-dat.d,] #30% test data
+train.loan
+nrow(test.loan)
+
+#Now creating seperate dataframe for 'creditability' feature which is our target
+train.loan_labels <- loan.subset[dat.d,1]
+test.loan_labels <- loan.subset[-dat.d,1]
+test.loan_labels
+
+install.packages("class")
+library(class)
+
+nrow(train.loan)
+NROW(train.loan)
+
+knn.26 <- knn(train=train.loan,test=test.loan,cl=train.loan_labels,k=26)
+knn.26
+
+knn.27 <- knn(train=train.loan,test=test.loan,cl=train.loan_labels,k=27)
+knn.27
+
+## Let's calculate the proportion of correct classification for k=26,27
+ACC.26 <- 100* sum(test.loan_labels==knn.26)/NROW(test.loan_labels) #For knn=26
+ACC.26
+?NROW
+
+ACC.27 <- 100* sum(test.loan_labels==knn.27)/NROW(test.loan_labels) #For knn=27
+ACC.27
+
+table(knn.26,test.loan_labels) #to check prediction against actual value in tabular form
+knn.26
+
+install.packages("caret")
+library(caret)
+confusionMatrix(table(knn.26,test.loan_labels))
+
+i=1            #declaration to initiate for loop
+k.optm=1       #declaration to initiate for loop
+for (i in 1:40) {
+  knn.mod <- knn(train=train.loan,test=test.loan,cl=train.loan_labels,k=i)
+  k.optm[i] <- 100 * sum(test.loan_labels==knn.mod)/NROW(test.loan_labels)
+  k=i
+  cat(k,"=",k.optm[i],'\n')
+}
+
+plot(k.optm,type = 'b',xlab = "k-value",ylab = "accuracy level") #to plot % accuracy wrt to k-value
