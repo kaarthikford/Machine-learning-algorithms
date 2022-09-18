@@ -1,0 +1,93 @@
+#Load the input as csv file
+import pandas as pd
+df = pd.read_csv('Tweets.csv')
+#Splitting the data
+df1 = df.dropna()
+df2 = df[df.isnull().any(axis=1)]
+
+#Identify the total number of categories
+df1['tweet_intent'].value_counts()
+
+#Apply nltk for tokenization
+import nltk
+
+#nltk.download()
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+
+#Set stopwords to remove clutters in the content
+stopWords = set(stopwords.words('english'))
+print(stopWords)
+
+#Process data cleaning
+import string
+import re
+def text_cleaning(tweet):
+# remove old style retweet text "RT"
+  new_tweet = re.sub(r'^RT[\s]+', '', tweet)
+  # remove hyperlinks
+  new_tweet = re.sub(r'https?:\/\/.*[\r\n]*', '', new_tweet)
+  # remove hashtags
+  # only removing the hash # sign from the word
+  new_tweet = re.sub(r'#', '', new_tweet)   
+  # remove stopwords
+  return [word for word in new_tweet.split() if word.lower() not in stopwords.words('english')]
+
+#Apply text cleaning function to splitted data
+print(df1.iloc[:,1].apply(text_cleaning))
+
+#Tokenize using countvector
+from sklearn.feature_extraction.text import CountVectorizer
+bow_transformer = CountVectorizer(analyzer=text_cleaning).fit(df1['tweet_text']) 
+  
+#print(len(bow_transformer.vocabulary_))   
+print(bow_transformer.vocabulary_)
+title_bow = bow_transformer.transform(df1['tweet_text'])
+print(title_bow)
+
+# TF-IDF Algo -term frequency-inverse document frequency to know the most significant words
+from sklearn.feature_extraction.text import TfidfTransformer
+tfidf_transformer=TfidfTransformer().fit(title_bow)
+print(tfidf_transformer)
+title_tfidf=tfidf_transformer.transform(title_bow)
+print(title_tfidf)
+# got tfidf values for whole vocabulary
+print(title_tfidf.shape)
+
+#from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import MultinomialNB
+model = MultinomialNB().fit(title_tfidf,df1['tweet_intent'])
+
+#prediction
+pred = model.predict(title_tfidf)
+
+#Printing the confusion matrix of our prediction
+from sklearn.metrics import confusion_matrix
+
+print(confusion_matrix(df1['tweet_intent'], pred))
+
+print(df2.iloc[:,1].apply(text_cleaning))
+
+from sklearn.feature_extraction.text import CountVectorizer
+bow_transformer2 = CountVectorizer(analyzer=text_cleaning).fit(df2['tweet_text']) 
+  
+#print(len(bow_transformer.vocabulary_))   
+print(bow_transformer2.vocabulary_)
+
+title_bow2 = bow_transformer2.transform(df1['tweet_text'])
+
+print(title_bow2)
+
+# TF-IDF Algo -term frequency-inverse document frequency to know the most significant words
+from sklearn.feature_extraction.text import TfidfTransformer
+tfidf_transformer2=TfidfTransformer().fit(title_bow2)
+print(tfidf_transformer2)
+title_tfidf2=tfidf_transformer.transform(title_bow2)
+print(title_tfidf2)
+# got tfidf values for whole vocabulary
+print(title_tfidf2.shape)
+
+#Apply prediction for the required data
+prediction = model.predict(title_tfidf2)
+print(prediction)
